@@ -1,1 +1,106 @@
-<!doctype html><title>Back-office</title><p>Back-office comes in lesson 01.</p>
+<!doctype html>
+<html lang="en" ng-app="backoffice">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PolicyDesk back-office</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body ng-controller="QueueController" ng-cloak>
+    <header class="topbar">
+      <h1>PolicyDesk · Back-office</h1>
+      <div class="who" ng-if="user">
+        <span>{{ user.displayName }} ({{ user.role }})</span>
+        <button type="button" ng-click="logout()">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- 1. Not signed in: the login form -->
+      <section class="card" ng-if="!user">
+        <h2>Sign in</h2>
+        <form name="loginForm" ng-submit="login()" novalidate>
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" ng-model="credentials.username" required autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" ng-model="credentials.password" required autocomplete="current-password" />
+          </div>
+          <p class="error" ng-show="error">{{ error }}</p>
+          <button class="primary" type="submit" ng-disabled="loginForm.$invalid">Sign in</button>
+          <p class="muted">Demo: <code>martin</code> / <code>demo</code> (underwriter)</p>
+        </form>
+      </section>
+
+      <!-- 2. Signed in: the request queue -->
+      <section class="card" ng-if="user">
+        <h2>Request queue</h2>
+
+        <div class="counts">
+          <span class="badge pending">{{ countByStatus('pending') }} pending</span>
+          <span class="badge in_review">{{ countByStatus('in_review') }} in review</span>
+          <span class="badge approved">{{ countByStatus('approved') }} approved</span>
+          <span class="badge rejected">{{ countByStatus('rejected') }} rejected</span>
+        </div>
+
+        <div class="toolbar">
+          <div class="field">
+            <label for="status">Status</label>
+            <select id="status" ng-model="filters.status">
+              <option value="open">Open (pending + in review)</option>
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="in_review">In review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="broker">Brokers</label>
+            <select id="broker" ng-model="filters.broker" ng-options="name for name in brokers">
+              <option value="">All brokers</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="search">Search</label>
+            <input id="search" ng-model="filters.text" placeholder="Client, policy, broker…" />
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" ng-click="sortBy('createdAt')">Received {{ sortArrow('createdAt') }}</th>
+              <th class="sortable" ng-click="sortBy('type')">Type {{ sortArrow('type') }}</th>
+              <th class="sortable" ng-click="sortBy('clientName')">Client {{ sortArrow('clientName') }}</th>
+              <th>Policy</th>
+              <th>Broker</th>
+              <th class="number">Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="r in requests | filter:matchesStatus | filter:filters.text | orderBy:sort.field:sort.reverse track by r.id">
+              <td>{{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ r.type | requestType }}</td>
+              <td>{{ r.clientName }}</td>
+              <td>{{ r.policyNumber }}</td>
+              <td>{{ r.brokerName }}</td>
+              <td class="number">{{ r.payload.amount ? (r.payload.amount | currency:'€ ':2) : '—' }}</td>
+              <td><span class="badge" ng-class="r.status">{{ r.status | statusLabel }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" ng-show="(requests | filter:matchesStatus | filter:filters.text).length === 0">No request matches.</p>
+        <p class="muted"> Last refresh: {{ lastRefresh | date:'HH:mm:ss' }}
+          <button type="button" ng-click="loadRequests()">Refresh now</button>
+        </p>
+      </section>
+    </main>
+
+    <script src="vendor/angular.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

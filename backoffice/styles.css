@@ -1,0 +1,76 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --text: #1f2933;
+  --muted: #5f6b7a;
+  --border: #d9dee5;
+  --primary: #8a4b08;
+  --primary-text: #ffffff;
+  --pending-bg: #fff4d6;
+  --pending: #7a5200;
+  --review-bg: #e3edfb;
+  --review: #1c4f91;
+  --approved-bg: #e1f3e6;
+  --approved: #1e6b35;
+  --rejected-bg: #fbe4e4;
+  --rejected: #9b2222;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--bg);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--review); }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 24px; background: var(--primary); color: var(--primary-text);
+}
+.topbar h1 { margin: 0; font-size: 18px; font-weight: 600; }
+.topbar .who { font-size: 14px; display: flex; gap: 12px; align-items: center; }
+.topbar button { background: transparent; color: inherit; border-color: rgba(255, 255, 255, 0.6); }
+
+main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.card h2 { margin: 0 0 12px; font-size: 18px; }
+.muted { color: var(--muted); }
+.error { color: var(--rejected); }
+
+form .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; max-width: 360px; }
+label { font-size: 13px; color: var(--muted); }
+input, select, textarea, button { font: inherit; }
+input, select, textarea { padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+input.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched { border-color: var(--rejected); }
+button { padding: 7px 14px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; }
+button.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
+button.danger { color: var(--rejected); border-color: var(--rejected); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 12px; }
+.toolbar .field { margin: 0; }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 13px; color: var(--muted); font-weight: 500; }
+th.sortable { cursor: pointer; user-select: none; }
+td.number, th.number { text-align: right; font-variant-numeric: tabular-nums; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: #fafbfc; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.badge.pending { background: var(--pending-bg); color: var(--pending); }
+.badge.in_review { background: var(--review-bg); color: var(--review); }
+.badge.approved { background: var(--approved-bg); color: var(--approved); }
+.badge.rejected { background: var(--rejected-bg); color: var(--rejected); }
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Hide {{ }} until AngularJS has compiled the page */
+[ng-cloak] { display: none !important; }
