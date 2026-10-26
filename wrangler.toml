@@ -1,0 +1,15 @@
+# Cloudflare Pages project config (read by `wrangler pages dev` and `wrangler pages deploy`).
+name = "policydesk"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Signs the demo login tokens. Fine for a demo; a real app keeps secrets out of git (`wrangler pages secret put`).
+TOKEN_SECRET = "policydesk-demo-secret-change-me"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "policydesk"
+# Local dev works with this placeholder. Before deploying, replace it with the id printed by `npx wrangler d1 create policydesk`.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
