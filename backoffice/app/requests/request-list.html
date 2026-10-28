@@ -1,0 +1,73 @@
+<section class="card">
+  <h2>Request queue</h2>
+
+  <div class="counts">
+    <span class="badge pending">{{ $ctrl.countByStatus('pending') }} pending</span>
+    <span class="badge in_review">{{ $ctrl.countByStatus('in_review') }} in review</span>
+    <span class="badge approved">{{ $ctrl.countByStatus('approved') }} approved</span>
+    <span class="badge rejected">{{ $ctrl.countByStatus('rejected') }} rejected</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" ng-model="$ctrl.filters.status">
+        <option value="open">Open (pending + in review)</option>
+        <option value="all">All</option>
+        <option value="pending">Pending</option>
+        <option value="in_review">In review</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="broker">Broker</label>
+      <select id="broker" ng-model="$ctrl.filters.broker" ng-options="name for name in $ctrl.brokers">
+        <option value="">All brokers</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search">Search</label>
+      <input id="search" ng-model="$ctrl.filters.text" placeholder="Client, policy, broker…" />
+    </div>
+    <div class="field">
+      <label><input type="checkbox" ng-model="$ctrl.filters.mineOnly" /> Only mine</label>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="sortable" ng-click="$ctrl.sortBy('createdAt')">Received {{ $ctrl.sortArrow('createdAt') }}</th>
+        <th class="sortable" ng-click="$ctrl.sortBy('type')">Type {{ $ctrl.sortArrow('type') }}</th>
+        <th class="sortable" ng-click="$ctrl.sortBy('clientName')">Client {{ $ctrl.sortArrow('clientName') }}</th>
+        <th>Policy</th>
+        <th>Broker</th>
+        <th class="number">Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        class="clickable"
+        ng-repeat="r in $ctrl.requests | filter:$ctrl.matchesStatus | filter:$ctrl.filters.text | orderBy:$ctrl.sort.field:$ctrl.sort.reverse track by r.id"
+        ng-click="$ctrl.open(r)"
+      >
+        <td>{{ ::r.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ ::r.type | requestType }}</td>
+        <td>{{ ::r.clientName }}</td>
+        <td>{{ ::r.policyNumber }}</td>
+        <td>{{ ::r.brokerName }}</td>
+        <td class="number">{{ ::(r.payload.amount ? (r.payload.amount | currency:'€ ':2) : '—') }}</td>
+        <td><status-badge status="r.status"></status-badge></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="muted" ng-show="($ctrl.requests | filter:$ctrl.matchesStatus | filter:$ctrl.filters.text).length === 0">
+    No request matches.
+  </p>
+  <p class="muted">
+    Last refresh: {{ $ctrl.lastRefresh | date:'HH:mm:ss' }}
+    <button type="button" ng-click="$ctrl.load()">Refresh now</button>
+  </p>
+</section>

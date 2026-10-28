@@ -1,0 +1,16 @@
+<section class="card">
+  <h2>Sign in</h2>
+  <form name="loginForm" ng-submit="$ctrl.submit()" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" ng-model="$ctrl.username" required autocomplete="username" />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" bo-autofocus ng-model="$ctrl.password" required autocomplete="current-password" />
+    </div>
+    <p class="error" ng-show="$ctrl.error">{{ $ctrl.error }}</p>
+    <button class="primary" type="submit" ng-disabled="loginForm.$invalid || $ctrl.busy">Sign in</button>
+    <p class="muted">Demo: <code>martin</code> / <code>demo</code> (underwriter)</p>
+  </form>
+</section>

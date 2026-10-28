@@ -1,0 +1,107 @@
+<p><a ui-sref="requests">← Back to the queue</a></p>
+
+<section class="card">
+  <h2>
+    Request #{{ $ctrl.request.id }} · {{ $ctrl.request.type | requestType }}
+    <status-badge status="$ctrl.request.status"></status-badge>
+  </h2>
+  <dl class="facts">
+    <dt>Client</dt>
+    <dd>{{ $ctrl.request.client.name }} ({{ $ctrl.request.client.type }})</dd>
+    <dt>Policy</dt>
+    <dd>{{ $ctrl.request.policy.policyNumber }} · {{ $ctrl.request.policy.productName }} (branch {{ $ctrl.request.branch }})</dd>
+    <dt>Current value</dt>
+    <dd>{{ $ctrl.request.policy.currentValue | currency:'€ ':2 }}</dd>
+    <dt>Broker</dt>
+    <dd>{{ $ctrl.request.brokerName }} (sent by {{ $ctrl.request.createdByName }})</dd>
+    <dt>Received</dt>
+    <dd>{{ $ctrl.request.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd>
+    <dt>Assigned to</dt>
+    <dd>{{ $ctrl.request.assignedToName || 'Nobody yet' }}</dd>
+  </dl>
+</section>
+
+<section class="card" ng-switch="$ctrl.request.type">
+  <h2>What the broker asks</h2>
+
+  <div ng-switch-when="fund_switch" class="grid-2">
+    <div>
+      <h3>Today</h3>
+      <table>
+        <tr ng-repeat="f in $ctrl.request.policy.funds">
+          <td>{{ f.name }}</td>
+          <td class="number">{{ f.share | number:1 }} %</td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <h3>After the switch</h3>
+      <table>
+        <tr ng-repeat="a in $ctrl.request.payload.allocations">
+          <td>{{ $ctrl.request.fundNames[a.fundId] }}</td>
+          <td class="number">{{ a.percent }} %</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <dl class="facts" ng-switch-when="partial_surrender">
+    <dt>Amount</dt>
+    <dd>{{ $ctrl.request.payload.amount | currency:'€ ':2 }}</dd>
+    <dt>Pay to</dt>
+    <dd>
+      {{ $ctrl.request.payload.iban }}
+      <strong class="error" ng-if="$ctrl.request.payload.iban !== $ctrl.request.client.iban">
+        ⚠ not the policyholder's IBAN ({{ $ctrl.request.client.iban }})
+      </strong>
+    </dd>
+  </dl>
+
+  <dl class="facts" ng-switch-when="extra_premium">
+    <dt>Extra premium</dt>
+    <dd>{{ $ctrl.request.payload.amount | currency:'€ ':2 }}</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Decision</h2>
+  <p class="error" ng-show="$ctrl.error">{{ $ctrl.error }}</p>
+
+  <div ng-if="!$ctrl.isOpen()">
+    <p>
+      <status-badge status="$ctrl.request.status"></status-badge>
+      on {{ $ctrl.request.decidedAt | date:'dd/MM/yyyy HH:mm' }} by {{ $ctrl.request.assignedToName }}
+    </p>
+    <p ng-if="$ctrl.request.decisionComment">“{{ $ctrl.request.decisionComment }}”</p>
+  </div>
+
+  <div ng-if="$ctrl.request.status === 'pending'">
+    <p class="muted">Take the request first, so other underwriters know you're on it.</p>
+    <button class="primary" type="button" ng-click="$ctrl.claim()" ng-disabled="$ctrl.busy">Take this request</button>
+  </div>
+
+  <form name="decisionForm" ng-if="$ctrl.request.status === 'in_review'" ng-submit="$ctrl.submitDecision(decisionForm)" novalidate>
+    <div class="field">
+      <label><input type="radio" ng-model="$ctrl.decision.choice" value="approve" /> Approve</label>
+      <label><input type="radio" ng-model="$ctrl.decision.choice" value="reject" /> Reject</label>
+    </div>
+    <div class="field">
+      <label for="comment">Comment {{ $ctrl.decision.choice === 'reject' ? '(required, at least 5 characters)' : '(optional)' }}</label>
+      <textarea
+        id="comment"
+        name="comment"
+        rows="3"
+        ng-model="$ctrl.decision.comment"
+        ng-required="$ctrl.decision.choice === 'reject'"
+        ng-minlength="$ctrl.decision.choice === 'reject' ? 5 : 0"
+      ></textarea>
+      <span class="error" ng-show="decisionForm.comment.$touched && decisionForm.comment.$error.required">Explain why you reject it.</span>
+      <span class="error" ng-show="decisionForm.comment.$error.minlength">At least 5 characters.</span>
+    </div>
+    <div class="actions">
+      <button type="submit" ng-class="$ctrl.decision.choice === 'reject' ? 'danger' : 'primary'" ng-disabled="decisionForm.$invalid || $ctrl.busy">
+        {{ $ctrl.decision.choice === 'reject' ? 'Reject' : 'Approve' }}
+      </button>
+    </div>
+  </form>
+</section>
