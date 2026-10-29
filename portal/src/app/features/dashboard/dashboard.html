@@ -1,0 +1,90 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Hello {{ user()?.displayName }}</h1>
+  </div>
+
+  <!-- The async pipe subscribes, gives the latest value, and unsubscribes when the component is destroyed. -->
+  @if (dashboard$ | async; as d) {
+    <div class="grid cols-4">
+      <app-kpi-card label="Assets under management" hint="Branch 21 + branch 23">
+        {{ d.assetsUnderManagement | currency: 'EUR' : 'symbol' : '1.0-0' }}
+      </app-kpi-card>
+      <app-kpi-card label="Clients">{{ d.clients }}</app-kpi-card>
+      <app-kpi-card label="Active policies">{{ d.activePolicies }}</app-kpi-card>
+      <app-kpi-card label="Open requests" hint="Pending or in review">{{
+        d.openRequests
+      }}</app-kpi-card>
+    </div>
+
+    <div class="grid cols-2" style="margin-top: 16px">
+      <section class="card">
+        <h2>Reserves by branch</h2>
+        <div class="split-bar" aria-hidden="true">
+          <span
+            class="b21"
+            [style.width.%]="(d.reservesByBranch.branch21 / d.assetsUnderManagement) * 100"
+          ></span>
+          <span class="b23"></span>
+        </div>
+        <dl class="facts">
+          <dt><span class="badge b21">Branch 21</span> guaranteed</dt>
+          <dd>
+            {{ d.reservesByBranch.branch21 | currency: 'EUR' : 'symbol' : '1.0-0' }}
+            ({{ d.reservesByBranch.branch21 / d.assetsUnderManagement | percent }})
+          </dd>
+          <dt><span class="badge b23">Branch 23</span> unit-linked</dt>
+          <dd>
+            {{ d.reservesByBranch.branch23 | currency: 'EUR' : 'symbol' : '1.0-0' }}
+            ({{ d.reservesByBranch.branch23 / d.assetsUnderManagement | percent }})
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Maturities in the next 90 days</h2>
+        @for (p of d.maturities; track p.id) {
+          <p>
+            <strong>{{ p.endDate | date: 'dd/MM/yyyy' }}</strong> · {{ p.clientName }} ·
+            {{ p.policyNumber }} · {{ p.currentValue | currency: 'EUR' }}
+          </p>
+        } @empty {
+          <p class="muted">No contract matures in the next 90 days.</p>
+        }
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Latest requests</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Client</th>
+              <th>Policy</th>
+              <th class="num">Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of d.recentRequests; track r.id) {
+              <tr>
+                <td>{{ r.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ r.type | requestType }}</td>
+                <td>{{ r.clientName }}</td>
+                <td>{{ r.policyNumber }}</td>
+                <td class="num">
+                  {{ r.payload.amount ? (r.payload.amount | currency: 'EUR') : '—' }}
+                </td>
+                <td><app-status-badge [status]="r.status" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <p class="muted">Loading…</p>
+  }
+</div>

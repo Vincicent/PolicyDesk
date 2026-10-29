@@ -1,0 +1,41 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 24px;
+  background: var(--primary-dark);
+  color: var(--on-primary);
+  flex-wrap: wrap;
+}
+.brand {
+  color: inherit;
+  font-weight: 700;
+  font-size: 18px;
+}
+nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+nav a {
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+nav a.active,
+nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  text-decoration: none;
+}
+.who {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.who .btn {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(255, 255, 255, 0.5);
+}

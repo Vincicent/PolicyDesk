@@ -1,0 +1,37 @@
+<div class="page" style="max-width: 420px">
+  <div class="card">
+    <h1>Sign in to PolicyDesk</h1>
+    <form #form="ngForm" (ngSubmit)="submit()" class="stack">
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          [(ngModel)]="username"
+          required
+          autocomplete="username"
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+      @if (error(); as message) {
+        <p class="alert error">{{ message }}</p>
+      }
+      <button class="btn primary" type="submit" [disabled]="form.invalid || busy()">
+        {{ busy() ? 'Signing in…' : 'Sign in' }}
+      </button>
+      <p class="muted">
+        Demo brokers: <code>dupont</code> or <code>janssens</code>, password <code>demo</code>.
+      </p>
+    </form>
+  </div>
+</div>

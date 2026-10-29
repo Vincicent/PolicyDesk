@@ -1,0 +1,11 @@
+.split-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--b23);
+  margin-bottom: 12px;
+}
+.split-bar .b21 {
+  background: var(--b21);
+}
