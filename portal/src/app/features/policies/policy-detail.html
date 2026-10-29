@@ -1,0 +1,129 @@
+<div class="page">
+  @if (policy.isLoading()) {
+    <p class="muted">Loading…</p>
+  } @else if (policy.error()) {
+    <p class="alert error">This policy does not exist or is not yours.</p>
+  } @else if (policy.value(); as p) {
+    <p>
+      <a [routerLink]="['/clients', p.clientId]">← {{ p.clientName }}</a>
+    </p>
+    <div class="page-head">
+      <h1>{{ p.policyNumber }} · {{ p.productName }}</h1>
+      <app-status-badge [status]="p.status" />
+    </div>
+
+    <div class="grid cols-2">
+      <section class="card">
+        <h2>Contract</h2>
+        <dl class="facts">
+          <dt>Branch</dt>
+          <dd>
+            <span class="badge" [class]="p.branch === 21 ? 'b21' : 'b23'"
+              >Branch {{ p.branch }}</span
+            >
+            {{ p.branch === 21 ? 'guaranteed interest' : 'unit-linked (no capital guarantee)' }}
+          </dd>
+          <dt>Start</dt>
+          <dd>{{ p.startDate | date: 'dd/MM/yyyy' }}</dd>
+          <dt>Maturity</dt>
+          <dd>{{ p.endDate ? (p.endDate | date: 'dd/MM/yyyy') : 'Whole life' }}</dd>
+          <dt>Premiums paid</dt>
+          <dd>{{ p.totalPremiums | currency }}</dd>
+          <dt>Current value</dt>
+          <dd>
+            <strong>{{ p.currentValue | currency }}</strong>
+          </dd>
+          <dt>Entry fee</dt>
+          <dd>{{ p.product.entryFeeRate | percent: '1.1-2' }} of each premium</dd>
+          @if (p.branch === 23) {
+            <dt>Management fee</dt>
+            <dd>{{ p.product.managementFeeRate | percent: '1.1-2' }} a year</dd>
+          }
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Requests on this policy</h2>
+        @for (r of p.requests; track r.id) {
+          <p>
+            {{ r.createdAt | date: 'dd/MM/yyyy' }} · {{ r.type | requestType }}
+            <app-status-badge [status]="r.status" />
+          </p>
+        } @empty {
+          <p class="muted">No request.</p>
+        }
+      </section>
+    </div>
+
+    @if (p.branch21; as b21) {
+      <section class="card">
+        <h2>Reserve history (branch 21)</h2>
+        <app-reserve-chart [history]="b21.history" />
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th class="num">Guaranteed rate</th>
+                <th class="num">Profit sharing</th>
+                <th class="num">Reserve at year end</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (y of b21.history; track y.year) {
+                <tr>
+                  <td>{{ y.year }}</td>
+                  <td class="num">{{ y.guaranteedRate | percent: '1.2-2' }}</td>
+                  <td class="num">{{ y.profitSharingRate | percent: '1.2-2' }}</td>
+                  <td class="num">{{ y.reserve | currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">
+          The guaranteed rate is fixed when each premium is paid. Profit sharing is decided every
+          year and never guaranteed.
+        </p>
+      </section>
+    }
+
+    @if (p.branch23; as b23) {
+      <section class="card">
+        <h2>Fund allocation (branch 23)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fund</th>
+                <th>Risk (SRI 1–7)</th>
+                <th class="num">Units</th>
+                <th class="num">NAV</th>
+                <th class="num">Value</th>
+                <th class="num">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of b23.funds; track f.fundId) {
+                <tr>
+                  <td>
+                    {{ f.name }}<br /><span class="muted">{{ f.isin }}</span>
+                  </td>
+                  <td>{{ f.riskClass }}</td>
+                  <td class="num">{{ f.units | number: '1.4-4' }}</td>
+                  <td class="num">{{ f.nav | currency: 'EUR' : 'symbol' : '1.2-4' }}</td>
+                  <td class="num">{{ f.value | currency }}</td>
+                  <td class="num">{{ f.share / 100 | percent: '1.1-1' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">
+          Value = units × NAV of {{ b23.funds[0]?.navDate | date: 'dd/MM/yyyy' }}. It goes up and
+          down with the markets.
+        </p>
+      </section>
+    }
+  }
+</div>

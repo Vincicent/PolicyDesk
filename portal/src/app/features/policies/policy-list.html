@@ -1,0 +1,105 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Policies</h1>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom: 12px">
+      <div class="field" style="flex: 1; min-width: 220px">
+        <label for="search">Search</label>
+        <input id="search" [formControl]="searchBox" placeholder="Policy number or client" />
+      </div>
+      <div class="field">
+        <label for="branch">Branch</label>
+        <select
+          id="branch"
+          [value]="query().branch"
+          (change)="updateQuery({ branch: $any($event.target).value, page: 1 })"
+        >
+          <option value="">All</option>
+          <option value="21">Branch 21</option>
+          <option value="23">Branch 23</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select
+          id="status"
+          [value]="query().status"
+          (change)="updateQuery({ status: $any($event.target).value, page: 1 })"
+        >
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="matured">Matured</option>
+          <option value="surrendered">Surrendered</option>
+        </select>
+      </div>
+    </div>
+
+    @let s = state();
+    @if (s.status === 'loading') {
+      <p class="muted">Loading…</p>
+    } @else if (s.status === 'error') {
+      <p class="alert error">{{ s.message }}</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Client</th>
+              <th>Product</th>
+              <th>Status</th>
+              <th>Start</th>
+              <th class="num">Current value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of s.page.items; track p.id) {
+              <tr class="clickable" (click)="open(p)">
+                <td>
+                  <a [routerLink]="['/policies', p.id]">{{ p.policyNumber }}</a>
+                </td>
+                <td>{{ p.clientName }}</td>
+                <td>
+                  <span class="badge" [class]="p.branch === 21 ? 'b21' : 'b23'"
+                    >B{{ p.branch }}</span
+                  >
+                  {{ p.productName }}
+                </td>
+                <td><app-status-badge [status]="p.status" /></td>
+                <td>{{ p.startDate | date: 'dd/MM/yyyy' }}</td>
+                <td class="num">{{ p.currentValue | currency }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="muted">No policy matches.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span class="muted"
+          >{{ s.page.total }} policies · page {{ s.page.page }} / {{ totalPages(s.page) }}</span
+        >
+        <button
+          class="btn"
+          type="button"
+          [disabled]="s.page.page <= 1"
+          (click)="updateQuery({ page: s.page.page - 1 })"
+        >
+          ← Previous
+        </button>
+        <button
+          class="btn"
+          type="button"
+          [disabled]="s.page.page >= totalPages(s.page)"
+          (click)="updateQuery({ page: s.page.page + 1 })"
+        >
+          Next →
+        </button>
+      </div>
+    }
+  </div>
+</div>

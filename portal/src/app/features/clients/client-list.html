@@ -1,0 +1,103 @@
+<div class="page">
+  <div class="page-head">
+    <h1>Clients</h1>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom: 12px">
+      <div class="field" style="flex: 1; min-width: 220px">
+        <label for="search">Search</label>
+        <input
+          id="search"
+          [formControl]="searchBox"
+          placeholder="Name, e-mail, national or company number"
+        />
+      </div>
+      <div class="field">
+        <label for="type">Type</label>
+        <select
+          id="type"
+          [value]="query().type"
+          (change)="updateQuery({ type: $any($event.target).value, page: 1 })"
+        >
+          <option value="">All</option>
+          <option value="person">Persons</option>
+          <option value="company">Companies</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sort">Sort by</label>
+        <select
+          id="sort"
+          [value]="query().sort"
+          (change)="updateQuery({ sort: $any($event.target).value })"
+        >
+          <option value="name">Name</option>
+          <option value="createdAt">Newest first</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- @let stores a value for this template; @if / @else if narrows the union type like TypeScript does. -->
+    @let s = state();
+    @if (s.status === 'loading') {
+      <p class="muted">Loading…</p>
+    } @else if (s.status === 'error') {
+      <p class="alert error">{{ s.message }}</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>City</th>
+              <th>E-mail</th>
+              <th class="num">Policies</th>
+              <th class="num">Total value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of s.page.items; track c.id) {
+              <tr class="clickable" (click)="open(c)">
+                <td>
+                  <a [routerLink]="['/clients', c.id]">{{ c.displayName }}</a>
+                </td>
+                <td>{{ c.type === 'person' ? 'Person' : 'Company' }}</td>
+                <td>{{ c.city }}</td>
+                <td>{{ c.email }}</td>
+                <td class="num">{{ c.policyCount }}</td>
+                <td class="num">{{ c.totalValue | currency }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="muted">No client matches.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span class="muted"
+          >{{ s.page.total }} clients · page {{ s.page.page }} / {{ totalPages(s.page) }}</span
+        >
+        <button
+          class="btn"
+          type="button"
+          [disabled]="s.page.page <= 1"
+          (click)="updateQuery({ page: s.page.page - 1 })"
+        >
+          ← Previous
+        </button>
+        <button
+          class="btn"
+          type="button"
+          [disabled]="s.page.page >= totalPages(s.page)"
+          (click)="updateQuery({ page: s.page.page + 1 })"
+        >
+          Next →
+        </button>
+      </div>
+    }
+  </div>
+</div>

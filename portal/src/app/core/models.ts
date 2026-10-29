@@ -75,3 +75,89 @@ export interface ApiError {
   message: string;
   details?: Record<string, string>;
 }
+
+/** One page of a list: { items, total, page, pageSize } */
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface Client {
+  id: number;
+  brokerId: number;
+  type: ClientType;
+  displayName: string;
+  firstName: string | null;
+  lastName: string | null;
+  birthDate: string | null;
+  nationalNumber: string | null;
+  companyName: string | null;
+  companyNumber: string | null;
+  email: string;
+  phone: string | null;
+  iban: string;
+  city: string;
+  language: 'fr' | 'nl' | 'en';
+  riskProfile: RiskProfile | null;
+  createdAt: string;
+  policyCount?: number;
+  totalValue?: number;
+}
+
+export interface ClientDetail extends Client {
+  policies: Policy[];
+  requests: PolicyRequest[];
+}
+
+export interface Product {
+  id: number;
+  code: string;
+  name: string;
+  branch: Branch;
+  clientType: ClientType;
+  guaranteedRate: number | null;
+  entryFeeRate: number;
+  managementFeeRate: number;
+  minPremium: number;
+  premiumTaxRate: number;
+  description: string;
+}
+
+export interface FundHolding {
+  fundId: number;
+  isin: string;
+  name: string;
+  riskClass: number;
+  units: number;
+  nav: number;
+  navDate: string;
+  value: number;
+  share: number;
+}
+
+export interface B21Year {
+  year: number;
+  guaranteedRate: number;
+  profitSharingRate: number;
+  reserve: number;
+}
+
+export interface PolicyDetail extends Policy {
+  product: Product;
+  branch21: { history: B21Year[] } | null;
+  branch23: { funds: FundHolding[] } | null;
+  requests: PolicyRequest[];
+}
+
+export interface Fund {
+  id: number;
+  isin: string;
+  name: string;
+  riskClass: number;
+  currency: string;
+  nav: number;
+  navDate: string;
+  change1y: number | null;
+}

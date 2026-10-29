@@ -1,0 +1,107 @@
+<div class="page">
+  <p><a routerLink="/clients">← All clients</a></p>
+
+  @if (client.isLoading()) {
+    <p class="muted">Loading…</p>
+  } @else if (client.error()) {
+    <p class="alert error">This client does not exist or is not yours.</p>
+  } @else if (client.value(); as c) {
+    <div class="page-head">
+      <h1>{{ c.displayName }}</h1>
+      <span class="badge">{{ c.type === 'person' ? 'Person' : 'Company' }}</span>
+    </div>
+
+    <div class="grid cols-2">
+      <section class="card">
+        <h2>Details</h2>
+        <dl class="facts">
+          @if (c.type === 'person') {
+            <dt>Born</dt>
+            <dd>{{ c.birthDate | date: 'dd/MM/yyyy' }}</dd>
+            <dt>National number</dt>
+            <dd>{{ c.nationalNumber }}</dd>
+          } @else {
+            <dt>Company number</dt>
+            <dd>{{ c.companyNumber }}</dd>
+          }
+          <dt>E-mail</dt>
+          <dd>{{ c.email }}</dd>
+          <dt>Phone</dt>
+          <dd>{{ c.phone || '—' }}</dd>
+          <dt>IBAN</dt>
+          <dd>{{ c.iban }}</dd>
+          <dt>City</dt>
+          <dd>{{ c.city }}</dd>
+          <dt>Language</dt>
+          <dd>{{ c.language.toUpperCase() }}</dd>
+          <dt>Risk profile</dt>
+          <dd>{{ c.riskProfile ?? 'Not assessed yet' }}</dd>
+        </dl>
+      </section>
+      <section class="card">
+        <h2>Portfolio</h2>
+        <p class="kpi-inline">
+          <span class="label">Total value</span><br />
+          <strong style="font-size: 24px">{{ totalValue() | currency }}</strong>
+        </p>
+        <p class="muted">
+          {{ c.policies.length }} policies · client since {{ c.createdAt | date: 'MMMM yyyy' }}
+        </p>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Policies</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Product</th>
+              <th>Status</th>
+              <th>Start</th>
+              <th class="num">Premiums paid</th>
+              <th class="num">Current value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of c.policies; track p.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/policies', p.id]">{{ p.policyNumber }}</a>
+                </td>
+                <td>
+                  <span class="badge" [class]="p.branch === 21 ? 'b21' : 'b23'"
+                    >B{{ p.branch }}</span
+                  >
+                  {{ p.productName }}
+                </td>
+                <td><app-status-badge [status]="p.status" /></td>
+                <td>{{ p.startDate | date: 'dd/MM/yyyy' }}</td>
+                <td class="num">{{ p.totalPremiums | currency }}</td>
+                <td class="num">{{ p.currentValue | currency }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="muted">No policy yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Requests</h2>
+      @for (r of c.requests; track r.id) {
+        <p>
+          {{ r.createdAt | date: 'dd/MM/yyyy' }} · {{ r.type | requestType }} on
+          {{ r.policyNumber }}
+          <app-status-badge [status]="r.status" />
+        </p>
+      } @empty {
+        <p class="muted">No request.</p>
+      }
+    </section>
+  }
+</div>
