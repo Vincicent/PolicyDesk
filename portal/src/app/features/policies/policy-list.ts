@@ -22,7 +22,7 @@ type ListState =
   | { status: 'error'; message: string }
   | { status: 'ok'; page: Page<Policy> };
 
-/** Exercise 04: the client list pattern (URL = state, debounced search, switchMap), applied to policies. */
+/** The client list pattern (URL = state, debounced search, switchMap), applied to policies. */
 @Component({
   selector: 'app-policy-list',
   imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, StatusBadge],

@@ -9,6 +9,7 @@
     <div class="page-head">
       <h1>{{ c.displayName }}</h1>
       <span class="badge">{{ c.type === 'person' ? 'Person' : 'Company' }}</span>
+      <a class="btn" [routerLink]="['/clients', c.id, 'edit']">Edit</a>
     </div>
 
     <div class="grid cols-2">

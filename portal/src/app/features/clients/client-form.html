@@ -1,0 +1,140 @@
+<div class="page" style="max-width: 860px">
+  <p>
+    @if (isEdit()) {
+      <a [routerLink]="['/clients', id()]">← Back to the client</a>
+    } @else {
+      <a routerLink="/clients">← All clients</a>
+    }
+  </p>
+  <h1>{{ isEdit() ? 'Edit client' : 'New client' }}</h1>
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  }
+  @if (error(); as message) {
+    <p class="alert error">{{ message }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="stack" novalidate>
+    <fieldset>
+      <legend>Type</legend>
+      <div class="radio-row">
+        <label><input type="radio" formControlName="type" value="person" /> Person</label>
+        <label><input type="radio" formControlName="type" value="company" /> Company</label>
+      </div>
+    </fieldset>
+
+    @if (form.controls.type.value === 'person') {
+      <fieldset formGroupName="person">
+        <legend>Person</legend>
+        <div class="grid cols-2">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" formControlName="firstName" autocomplete="given-name" />
+            <app-field-error [control]="form.get('person.firstName')!" />
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" formControlName="lastName" autocomplete="family-name" />
+            <app-field-error [control]="form.get('person.lastName')!" />
+          </div>
+          <div class="field">
+            <label for="birthDate">Birth date</label>
+            <input id="birthDate" type="date" formControlName="birthDate" />
+            <app-field-error [control]="form.get('person.birthDate')!" />
+          </div>
+          <div class="field">
+            <label for="nationalNumber">National number</label>
+            <input
+              id="nationalNumber"
+              formControlName="nationalNumber"
+              placeholder="85.07.30-033.28"
+            />
+            <app-field-error [control]="form.get('person.nationalNumber')!" />
+          </div>
+        </div>
+        @if (groupError(); as e) {
+          <p class="error-text">{{ e }}</p>
+        }
+      </fieldset>
+    } @else {
+      <fieldset formGroupName="company">
+        <legend>Company</legend>
+        <div class="grid cols-2">
+          <div class="field">
+            <label for="companyName">Company name</label>
+            <input id="companyName" formControlName="companyName" autocomplete="organization" />
+            <app-field-error [control]="form.get('company.companyName')!" />
+          </div>
+          <div class="field">
+            <label for="companyNumber">Company number (BCE/KBO)</label>
+            <input id="companyNumber" formControlName="companyNumber" placeholder="0403.199.702" />
+            <app-field-error [control]="form.get('company.companyNumber')!" />
+          </div>
+        </div>
+      </fieldset>
+    }
+
+    <fieldset formGroupName="contact">
+      <legend>Contact</legend>
+      <div class="grid cols-2">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" formControlName="email" autocomplete="email" />
+          <app-field-error [control]="form.get('contact.email')!" />
+        </div>
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <input
+            id="phone"
+            formControlName="phone"
+            placeholder="+32 470 12 34 56"
+            autocomplete="tel"
+          />
+          <app-field-error [control]="form.get('contact.phone')!" />
+        </div>
+        <div class="field">
+          <label for="iban">IBAN</label>
+          <input id="iban" formControlName="iban" placeholder="BE68 5390 0754 7034" />
+          <app-field-error [control]="form.get('contact.iban')!" />
+        </div>
+        <div class="field">
+          <label for="city">City</label>
+          <input id="city" formControlName="city" autocomplete="address-level2" />
+          <app-field-error [control]="form.get('contact.city')!" />
+        </div>
+        <div class="field">
+          <label for="language">Language</label>
+          <select id="language" formControlName="language">
+            <option value="fr">French</option>
+            <option value="nl">Dutch</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Risk profile (from the suitability questionnaire)</legend>
+      <div class="radio-row">
+        <label
+          ><input type="radio" formControlName="riskProfile" value="" /> Not assessed yet</label
+        >
+        <label
+          ><input type="radio" formControlName="riskProfile" value="defensive" /> Defensive</label
+        >
+        <label><input type="radio" formControlName="riskProfile" value="neutral" /> Neutral</label>
+        <label><input type="radio" formControlName="riskProfile" value="dynamic" /> Dynamic</label>
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <button class="btn primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : isEdit() ? 'Save changes' : 'Create client' }}
+      </button>
+      <span class="muted"
+        >Form status: {{ form.status }} · {{ form.dirty ? 'changed' : 'unchanged' }}</span
+      >
+    </div>
+  </form>
+</div>

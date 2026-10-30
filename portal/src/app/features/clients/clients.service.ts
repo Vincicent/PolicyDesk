@@ -1,7 +1,24 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Client, ClientDetail, ClientType, Page } from '../../core/models';
+import { Client, ClientDetail, ClientType, Page, RiskProfile } from '../../core/models';
+
+/** What POST/PUT /api/clients expect. */
+export interface ClientInput {
+  type: ClientType;
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  nationalNumber?: string;
+  companyName?: string;
+  companyNumber?: string;
+  email: string;
+  phone: string;
+  iban: string;
+  city: string;
+  language: 'fr' | 'nl' | 'en';
+  riskProfile: RiskProfile | null;
+}
 
 export interface ClientQuery {
   search: string;
@@ -28,7 +45,15 @@ export class ClientsService {
     return `/api/clients/${id}`;
   }
 
-  get(id: number): Observable<ClientDetail> {
+  get(id: number | string): Observable<ClientDetail> {
     return this.http.get<ClientDetail>(this.url(id));
+  }
+
+  create(input: ClientInput): Observable<Client> {
+    return this.http.post<Client>('/api/clients', input);
+  }
+
+  update(id: number | string, input: ClientInput): Observable<Client> {
+    return this.http.put<Client>(this.url(id), input);
   }
 }
