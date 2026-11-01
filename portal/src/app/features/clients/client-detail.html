@@ -10,6 +10,9 @@
       <h1>{{ c.displayName }}</h1>
       <span class="badge">{{ c.type === 'person' ? 'Person' : 'Company' }}</span>
       <a class="btn" [routerLink]="['/clients', c.id, 'edit']">Edit</a>
+      <a class="btn primary" routerLink="/quotes/new" [queryParams]="{ clientId: c.id }"
+        >New quote</a
+      >
     </div>
 
     <div class="grid cols-2">

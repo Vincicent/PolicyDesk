@@ -49,6 +49,11 @@ export const routes: Routes = [
           import('./features/policies/policy-detail').then((m) => m.PolicyDetailPage),
         title: 'Policy · PolicyDesk',
       },
+      {
+        path: 'quotes/new',
+        loadComponent: () => import('./features/quotes/quote-wizard').then((m) => m.QuoteWizard),
+        title: 'New quote · PolicyDesk',
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

@@ -1,0 +1,240 @@
+<div class="page" style="max-width: 920px">
+  <h1>New quote</h1>
+
+  @if (saved(); as quote) {
+    <div class="card">
+      <p class="alert success">
+        Quote <strong>{{ quote.reference }}</strong> saved.
+      </p>
+      <div class="row">
+        <a class="btn" [routerLink]="['/clients', form.controls.client.controls.clientId.value]"
+          >Back to the client</a
+        >
+        <button class="btn primary" type="button" (click)="restart()">Make another quote</button>
+      </div>
+    </div>
+  } @else {
+    <div class="steps">
+      @for (s of steps(); track s.id) {
+        <div class="step" [class.active]="s.id === step()" [class.done]="isDone(s.id)">
+          {{ $index + 1 }}. {{ s.label }}
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="next()" novalidate>
+      @switch (step()) {
+        @case ('client') {
+          <section class="card stack" formGroupName="client">
+            <div class="field">
+              <label for="clientId">Client</label>
+              <select id="clientId" formControlName="clientId">
+                <option [ngValue]="null" disabled>Choose a client</option>
+                @for (c of clients.value()?.items ?? []; track c.id) {
+                  <option [ngValue]="c.id">{{ c.displayName }} ({{ c.type }})</option>
+                }
+              </select>
+              <app-field-error [control]="form.controls.client.controls.clientId" />
+            </div>
+            <fieldset>
+              <legend>Product</legend>
+              @for (p of availableProducts(); track p.code) {
+                <label class="product">
+                  <input type="radio" formControlName="productCode" [value]="p.code" />
+                  <span>
+                    <strong>{{ p.name }}</strong>
+                    <span class="badge" [class]="p.branch === 21 ? 'b21' : 'b23'"
+                      >Branch {{ p.branch }}</span
+                    ><br />
+                    <span class="muted">{{ p.description }}</span>
+                  </span>
+                </label>
+              } @empty {
+                <p class="muted">Choose a client first.</p>
+              }
+              <app-field-error [control]="form.controls.client.controls.productCode" />
+            </fieldset>
+          </section>
+        }
+
+        @case ('profile') {
+          <section class="card stack" formGroupName="profile">
+            <p class="muted">
+              Branch 23 is an investment: before advising it, the broker must check the client's
+              knowledge, goals and attitude to risk (suitability test).
+            </p>
+            <fieldset>
+              <legend>When will the client need this money?</legend>
+              <div class="radio-row">
+                <label
+                  ><input type="radio" formControlName="horizon" value="short" /> Within 3
+                  years</label
+                >
+                <label
+                  ><input type="radio" formControlName="horizon" value="medium" /> In 3 to 8
+                  years</label
+                >
+                <label
+                  ><input type="radio" formControlName="horizon" value="long" /> In more than 8
+                  years</label
+                >
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>The investment loses 20 % in a year. The client…</legend>
+              <div class="radio-row">
+                <label
+                  ><input type="radio" formControlName="reaction" value="sell" /> sells
+                  everything</label
+                >
+                <label><input type="radio" formControlName="reaction" value="wait" /> waits</label>
+                <label
+                  ><input type="radio" formControlName="reaction" value="buy" /> invests more</label
+                >
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Investment experience</legend>
+              <div class="radio-row">
+                <label><input type="radio" formControlName="experience" value="none" /> None</label>
+                <label
+                  ><input type="radio" formControlName="experience" value="some" /> Some (savings,
+                  bonds)</label
+                >
+                <label
+                  ><input type="radio" formControlName="experience" value="good" /> Good (shares,
+                  funds)</label
+                >
+              </div>
+            </fieldset>
+            @if (form.controls.profile.touched && form.controls.profile.invalid) {
+              <p class="error-text">Answer the three questions.</p>
+            }
+            @if (profile(); as p) {
+              <p class="alert info">
+                Profile: <strong>{{ p }}</strong
+                >. Funds up to risk class SRI {{ allowedFunds().at(-1)?.riskClass }}.
+              </p>
+            }
+          </section>
+        }
+
+        @case ('investment') {
+          <section class="card stack" formGroupName="investment">
+            <div class="grid cols-2">
+              <div class="field">
+                <label for="premium">Single premium (€)</label>
+                <input id="premium" type="number" formControlName="premium" step="500" />
+                <span class="hint"
+                  >Minimum {{ product()?.minPremium | currency: 'EUR' : 'symbol' : '1.0-0' }}</span
+                >
+                <app-field-error [control]="form.controls.investment.controls.premium" />
+              </div>
+              <div class="field">
+                <label for="durationYears">Duration (years)</label>
+                <input
+                  id="durationYears"
+                  type="number"
+                  formControlName="durationYears"
+                  min="1"
+                  max="40"
+                />
+                <app-field-error [control]="form.controls.investment.controls.durationYears" />
+              </div>
+            </div>
+            @if (isBranch23()) {
+              <fieldset>
+                <legend>Funds</legend>
+                <app-allocation-editor [array]="allocations" [funds]="funds.value()" />
+              </fieldset>
+            }
+          </section>
+        }
+
+        @case ('summary') {
+          <section class="card">
+            <dl class="facts">
+              <dt>Client</dt>
+              <dd>{{ client()?.displayName }}</dd>
+              <dt>Product</dt>
+              <dd>{{ product()?.name }}</dd>
+              <dt>Premium</dt>
+              <dd>{{ form.controls.investment.controls.premium.value | currency }}</dd>
+              <dt>Duration</dt>
+              <dd>{{ form.controls.investment.controls.durationYears.value }} years</dd>
+              @if (isBranch23()) {
+                <dt>Profile</dt>
+                <dd>{{ profile() }}</dd>
+                <dt>Funds</dt>
+                <dd>
+                  @for (a of allocations.getRawValue(); track $index) {
+                    {{ a.percent }} % {{ fundName(a.fundId) }}<br />
+                  }
+                </dd>
+              }
+            </dl>
+          </section>
+        }
+      }
+
+      @if (projection(); as p) {
+        <section class="card">
+          <h2>Projection</h2>
+          <p class="muted">
+            Invested after premium tax ({{ product()?.premiumTaxRate | percent: '1.1-1' }}) and
+            entry fee ({{ product()?.entryFeeRate | percent: '1.1-1' }}):
+            <strong>{{ p.net | currency }}</strong>
+          </p>
+          @if (p.branch === 21) {
+            <p>
+              Guaranteed capital after
+              {{ form.controls.investment.controls.durationYears.value }} years at
+              {{ product()?.guaranteedRate | percent: '1.2-2' }}:
+              <strong>{{ p.capital | currency }}</strong>
+              <span class="muted">(+ profit sharing, not guaranteed)</span>
+            </p>
+          } @else {
+            <div class="grid cols-4">
+              <div class="kpi">
+                <div class="label">Unfavourable</div>
+                <div class="value">{{ p.unfavourable | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Moderate</div>
+                <div class="value">{{ p.moderate | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Favourable</div>
+                <div class="value">{{ p.favourable | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Average risk (SRI)</div>
+                <div class="value">{{ p.riskClass | number: '1.1-1' }}</div>
+              </div>
+            </div>
+            <p class="muted">
+              Illustration only: branch 23 has no capital guarantee, the client can lose money.
+            </p>
+          }
+        </section>
+      }
+
+      @if (error(); as message) {
+        <p class="alert error">{{ message }}</p>
+      }
+
+      <div class="row">
+        @if (step() !== 'client') {
+          <button class="btn" type="button" (click)="back()">← Back</button>
+        }
+        @if (step() === 'summary') {
+          <button class="btn primary" type="button" (click)="save()" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Save the quote' }}
+          </button>
+        } @else {
+          <button class="btn primary" type="submit">Next →</button>
+        }
+      </div>
+    </form>
+  }
+</div>
