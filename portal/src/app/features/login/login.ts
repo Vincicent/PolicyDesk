@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
@@ -10,6 +10,8 @@ import { toApiError } from '../../core/api-error';
   templateUrl: './login.html',
 })
 export class Login {
+  readonly returnUrl = input<string>();
+
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -32,7 +34,7 @@ export class Login {
           );
           return;
         }
-        void this.router.navigate(['/dashboard']);
+        void this.router.navigateByUrl(safeReturnUrl(this.returnUrl()));
       },
       error: (err: unknown) => {
         this.busy.set(false);
@@ -40,4 +42,12 @@ export class Login {
       },
     });
   }
+}
+
+/**
+ * Only follow internal paths. Without this check, a link like /login?returnUrl=https://evil.example
+ * would send the user to another site right after they signed in (an "open redirect").
+ */
+export function safeReturnUrl(url: string | undefined): string {
+  return url && url.startsWith('/') && !url.startsWith('//') ? url : '/dashboard';
 }

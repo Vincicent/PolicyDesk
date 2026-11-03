@@ -1,0 +1,101 @@
+<div class="page" style="max-width: 860px">
+  @if (policy.value(); as p) {
+    <p>
+      <a [routerLink]="['/policies', p.id]">← {{ p.policyNumber }}</a>
+    </p>
+    <h1>New request · {{ p.policyNumber }}</h1>
+    <p class="muted">
+      {{ p.clientName }} · {{ p.productName }} · current value {{ p.currentValue | currency }}
+    </p>
+
+    @if (p.status !== 'active') {
+      <p class="alert error">This policy is not active: no request is possible.</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="stack" novalidate>
+        <fieldset>
+          <legend>What does the client want?</legend>
+          <div class="radio-row">
+            <label
+              ><input type="radio" formControlName="type" value="extra_premium" /> Pay an extra
+              premium</label
+            >
+            <label
+              ><input type="radio" formControlName="type" value="partial_surrender" /> Take money
+              out (partial surrender)</label
+            >
+            @if (isBranch23()) {
+              <label
+                ><input type="radio" formControlName="type" value="fund_switch" /> Switch
+                funds</label
+              >
+            }
+          </div>
+        </fieldset>
+
+        @switch (form.controls.type.value) {
+          @case ('extra_premium') {
+            <fieldset formGroupName="premium">
+              <legend>Extra premium</legend>
+              <div class="field" style="max-width: 260px">
+                <label for="premiumAmount">Amount (€)</label>
+                <input id="premiumAmount" type="number" formControlName="amount" step="100" />
+                <span class="hint">From 500 € to 1.000.000 €</span>
+                <app-field-error [control]="form.controls.premium.controls.amount" />
+              </div>
+            </fieldset>
+          }
+          @case ('partial_surrender') {
+            <fieldset formGroupName="surrender">
+              <legend>Partial surrender</legend>
+              <div class="grid cols-2">
+                <div class="field">
+                  <label for="surrenderAmount">Amount (€)</label>
+                  <input id="surrenderAmount" type="number" formControlName="amount" step="100" />
+                  @if (form.controls.surrender.controls.amount.pending) {
+                    <span class="hint">Checking with the valuation service…</span>
+                  }
+                  <app-field-error [control]="form.controls.surrender.controls.amount" />
+                </div>
+                <div class="field">
+                  <label for="iban">Pay to (IBAN)</label>
+                  <input id="iban" formControlName="iban" />
+                  @if (client.value(); as c) {
+                    @if (form.controls.surrender.controls.iban.value !== c.iban) {
+                      <span class="hint">
+                        Not the policyholder's IBAN.
+                        <button class="btn link" type="button" (click)="useClientIban()">
+                          Use {{ c.iban }}
+                        </button>
+                      </span>
+                    }
+                  }
+                  <app-field-error [control]="form.controls.surrender.controls.iban" />
+                </div>
+              </div>
+            </fieldset>
+          }
+          @case ('fund_switch') {
+            <fieldset formGroupName="fundSwitch">
+              <legend>New fund allocation (replaces the current one)</legend>
+              <app-allocation-editor [array]="allocations" [funds]="funds.value()" />
+            </fieldset>
+          }
+        }
+
+        @if (error(); as message) {
+          <p class="alert error">{{ message }}</p>
+        }
+        <div class="row">
+          <button class="btn primary" type="submit" [disabled]="saving() || form.pending">
+            {{ saving() ? 'Sending…' : 'Send to the insurer' }}
+          </button>
+          <span class="muted">An underwriter reviews it in the back-office.</span>
+        </div>
+      </form>
+    }
+  } @else if (policy.error()) {
+    <p class="alert error">This policy does not exist or is not yours.</p>
+  } @else {
+    <p class="muted">Loading…</p>
+  }
+</div>

@@ -10,6 +10,9 @@
     <div class="page-head">
       <h1>{{ p.policyNumber }} · {{ p.productName }}</h1>
       <app-status-badge [status]="p.status" />
+      @if (p.status === 'active') {
+        <a class="btn primary" [routerLink]="['/policies', p.id, 'requests', 'new']">New request</a>
+      }
     </div>
 
     <div class="grid cols-2">
@@ -54,6 +57,37 @@
         }
       </section>
     </div>
+
+    <section class="card">
+      <h2>Valuation from the policy system (SOAP)</h2>
+      @if (valuation(); as v) {
+        <dl class="facts">
+          <dt>Valuation date</dt>
+          <dd>{{ v.valuationDate | date: 'dd/MM/yyyy' }}</dd>
+          <dt>Gross value</dt>
+          <dd>{{ v.grossValue | currency }}</dd>
+          <dt>Surrender fee</dt>
+          <dd>{{ v.surrenderFeeRate | percent: '1.1-2' }}</dd>
+          <dt>Surrender value</dt>
+          <dd>
+            <strong>{{ v.surrenderValue | currency }}</strong>
+          </dd>
+        </dl>
+      } @else {
+        <p class="muted">How much would the client receive if they took everything out today?</p>
+      }
+      @if (valuationError(); as message) {
+        <p class="alert error">{{ message }}</p>
+      }
+      <button
+        class="btn"
+        type="button"
+        (click)="askValuation(p.policyNumber)"
+        [disabled]="valuating()"
+      >
+        {{ valuating() ? 'Asking…' : valuation() ? 'Ask again' : 'Ask the valuation service' }}
+      </button>
+    </section>
 
     @if (p.branch21; as b21) {
       <section class="card">

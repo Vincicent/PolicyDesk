@@ -44,6 +44,13 @@ export const routes: Routes = [
         title: 'Policies · PolicyDesk',
       },
       {
+        path: 'policies/:id/requests/new',
+        loadComponent: () =>
+          import('./features/requests/request-form').then((m) => m.RequestFormPage),
+        canDeactivate: [unsavedChangesGuard],
+        title: 'New request · PolicyDesk',
+      },
+      {
         path: 'policies/:id',
         loadComponent: () =>
           import('./features/policies/policy-detail').then((m) => m.PolicyDetailPage),

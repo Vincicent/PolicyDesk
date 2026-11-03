@@ -1,6 +1,4 @@
-import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import localeEnBe from '@angular/common/locales/en-BE';
 import {
   ApplicationConfig,
   DEFAULT_CURRENCY_CODE,
@@ -10,9 +8,7 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth.interceptor';
-
-// English texts, Belgian formats: 1.234,56 € and dd/MM/yyyy.
-registerLocaleData(localeEnBe);
+import { APP_LOCALE } from './core/locale';
 
 /** App-wide providers: what used to go in AppModule's `providers` and `imports`. */
 export const appConfig: ApplicationConfig = {
@@ -20,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
-    { provide: LOCALE_ID, useValue: 'en-BE' },
+    { provide: LOCALE_ID, useValue: APP_LOCALE }, // English texts, Belgian formats (see core/locale.ts)
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
   ],
 };

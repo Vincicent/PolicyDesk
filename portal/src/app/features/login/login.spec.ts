@@ -2,9 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { Login } from './login';
+import { Login, safeReturnUrl } from './login';
 
-// a component test. We drive the real template like a user would.
 describe('Login', () => {
   let http: HttpTestingController;
 
@@ -52,7 +51,7 @@ describe('Login', () => {
 
   it('goes to the dashboard after a broker signs in', async () => {
     const { fixture, el, type } = await setup();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl');
     type('#password', 'demo');
     await fixture.whenStable();
     el.querySelector('form')!.dispatchEvent(new Event('submit'));
@@ -62,7 +61,7 @@ describe('Login', () => {
       user: { id: 1, username: 'dupont', displayName: 'Claire', role: 'broker', brokerId: 1 },
     });
 
-    expect(navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(navigate).toHaveBeenCalledWith('/dashboard');
   });
 
   it('refuses underwriters', async () => {
@@ -86,5 +85,12 @@ describe('Login', () => {
 
     expect(el.querySelector('.alert.error')?.textContent).toContain('back-office');
     expect(sessionStorage.getItem('policydesk.token')).toBeNull();
+  });
+
+  it('exercise 07: only returns to internal pages', () => {
+    expect(safeReturnUrl('/clients/5')).toBe('/clients/5');
+    expect(safeReturnUrl(undefined)).toBe('/dashboard');
+    expect(safeReturnUrl('https://evil.example')).toBe('/dashboard');
+    expect(safeReturnUrl('//evil.example')).toBe('/dashboard'); // protocol-relative URL = another site
   });
 });

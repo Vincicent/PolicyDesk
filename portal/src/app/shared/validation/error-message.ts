@@ -1,4 +1,6 @@
+import { formatCurrency } from '@angular/common';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { APP_LOCALE } from '../../core/locale';
 
 /** One readable message per error key. The first error found wins. */
 export function errorMessage(errors: ValidationErrors | null): string | null {
@@ -14,6 +16,12 @@ export function errorMessage(errors: ValidationErrors | null): string | null {
     const a = errors['age'] as { min: number; max: number };
     return `Must be between ${a.min} and ${a.max} years old`;
   }
+  if (errors['maxSurrender']) {
+    const max = (errors['maxSurrender'] as { max: number }).max;
+    return `More than the surrender value (${formatCurrency(max, APP_LOCALE, '€', 'EUR')})`; // same format as the | currency pipe
+  }
+  if (errors['valuationUnavailable'])
+    return 'The valuation service is not answering. Try again later.';
   if (errors['min']) return `At least ${(errors['min'] as { min: number }).min}`;
   if (errors['max']) return `At most ${(errors['max'] as { max: number }).max}`;
   if (errors['pattern']) return 'Wrong format';

@@ -14,7 +14,7 @@ function runGuard(user: User | null) {
     providers: [provideRouter([]), { provide: AuthService, useValue: { user: () => user } }], // a fake AuthService
   });
   return TestBed.runInInjectionContext(() =>
-    authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
+    authGuard({} as ActivatedRouteSnapshot, { url: '/clients/5' } as RouterStateSnapshot),
   );
 }
 
@@ -25,9 +25,9 @@ describe('authGuard', () => {
     ).toBe(true);
   });
 
-  it('sends visitors to /login', () => {
+  it('sends visitors to /login, remembering where they wanted to go', () => {
     const result = runGuard(null);
-    expect(result instanceof UrlTree && result.toString()).toBe('/login');
+    expect(result instanceof UrlTree && result.toString()).toBe('/login?returnUrl=%2Fclients%2F5');
   });
 
   it('sends underwriters to /login too', () => {
