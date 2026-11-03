@@ -94,7 +94,11 @@ export class QuoteWizard implements OnInit {
   );
   protected readonly isBranch23 = computed(() => this.product()?.branch === 23);
 
+  protected readonly knownProfile = computed(() => this.client()?.riskProfile ?? null);
+
   protected readonly profile = computed<RiskProfile | null>(() => {
+    const known = this.knownProfile();
+    if (known) return known;
     const a = this.value().profile;
     return a?.horizon && a.reaction && a.experience
       ? riskProfile({ horizon: a.horizon, reaction: a.reaction, experience: a.experience })
@@ -135,7 +139,8 @@ export class QuoteWizard implements OnInit {
       { id: 'investment', label: 'Investment' },
       { id: 'summary', label: 'Summary' },
     ];
-    return this.isBranch23() ? all : all.filter((s) => s.id !== 'profile'); // branch 21: no questionnaire
+    // No questionnaire for branch 21, nor when the client's profile is already known.
+    return this.isBranch23() && !this.knownProfile() ? all : all.filter((s) => s.id !== 'profile');
   });
 
   get allocations(): FormArray<AllocationRow> {

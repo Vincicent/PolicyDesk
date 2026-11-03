@@ -8,6 +8,7 @@ const clients = {
   items: [
     { id: 1, displayName: 'Ann Peeters', type: 'person' },
     { id: 2, displayName: 'Garage Claes BV', type: 'company' },
+    { id: 3, displayName: 'Wout Dupuis', type: 'person', riskProfile: 'neutral' },
   ],
   total: 2,
   page: 1,
@@ -168,5 +169,17 @@ describe('QuoteWizard', () => {
     expect(premium.closest('.field')!.querySelector('.error-text')?.textContent).toBe(
       'At least 5000',
     );
+  });
+
+  it('skips the questionnaire when the client already has a profile', async () => {
+    await setup('3');
+    await click(el.querySelectorAll('.product input')[1]); // Invest 23
+    expect(steps()).toEqual(['1. Client & product', '2. Investment', '3. Summary']);
+    await next();
+    expect(el.querySelector('.alert.info')?.textContent).toContain('neutral');
+
+    await choose('#fund-0', 'Euro Equity'); // SRI 5 > neutral max (4)
+    await next();
+    expect(el.textContent).toContain('Too risky');
   });
 });

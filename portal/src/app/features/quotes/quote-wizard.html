@@ -143,6 +143,11 @@
               </div>
             </div>
             @if (isBranch23()) {
+              @if (knownProfile(); as known) {
+                <p class="alert info">
+                  Known risk profile: <strong>{{ known }}</strong> (from the client file).
+                </p>
+              }
               <fieldset>
                 <legend>Funds</legend>
                 <app-allocation-editor [array]="allocations" [funds]="funds.value()" />
